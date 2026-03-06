@@ -6,16 +6,6 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
 
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
-
-  cache:
-    type: redis
-    redis:
-      time-to-live: 600000
-      cache-null-values: false
 
   servlet:
     multipart:

@@ -7,9 +7,6 @@ import com.manish.videostreaming.model.Video;
 import com.manish.videostreaming.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,7 +33,6 @@ public class VideoService {
         }
     }
 
-    @CacheEvict(value = { "video:long", "video:short" }, allEntries = true)
     public Video uploadVideo(String title, String description, MultipartFile videoFile, MultipartFile thumbnail,
             boolean isShort) {
         User currentUser = userService.getCurrentUser();
@@ -68,7 +64,6 @@ public class VideoService {
         return videoRepository.save(video);
     }
 
-    @Cacheable(value = "video:long", key = "#root.methodName + '_' + #root.target.getCurrentUsername()")
     public List<VideoDto> getAllVideos() {
         System.out.println("DEBUG: VideoService.getAllVideos() called for user: " + getCurrentUsername());
         // Return only long videos (isShort = false)
@@ -77,7 +72,6 @@ public class VideoService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    @Cacheable(value = "video:short", key = "#root.methodName + '_' + #root.target.getCurrentUsername()")
     public List<VideoDto> getAllShorts() {
         // Return only shorts (isShort = true)
         return videoRepository.findByIsShortTrueAndIsPublishedTrue().stream()
@@ -85,7 +79,6 @@ public class VideoService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    @Cacheable(value = "video:entity", key = "#id + '_' + #root.target.getCurrentUsername()")
     public VideoDto getVideoById(String id) {
         Video video = videoRepository.findById(id)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND.value(), "Video not found"));
@@ -98,7 +91,6 @@ public class VideoService {
         return mapToVideoDto(video);
     }
 
-    @Cacheable(value = "video:search", key = "#query + '_' + #root.target.getCurrentUsername()")
     public List<VideoDto> searchVideos(String query) {
         System.out.println("DEBUG: VideoService.searchVideos() called with query: " + query + " for user: "
                 + getCurrentUsername());
@@ -110,7 +102,6 @@ public class VideoService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    @CacheEvict(value = "video:entity", key = "#videoId")
     public void incrementViews(String videoId) {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND.value(), "Video not found"));
@@ -158,11 +149,6 @@ public class VideoService {
                 .build();
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = "video:long", allEntries = true),
-            @CacheEvict(value = "video:short", allEntries = true),
-            @CacheEvict(value = "video:entity", key = "#videoId")
-    })
     public Video togglePublishStatus(String videoId) {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND.value(), "Video not found"));

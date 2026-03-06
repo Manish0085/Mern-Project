@@ -7,10 +7,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     // Initialize from localStorage for instant UI responsiveness on refresh
-    const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem('user');
-        return savedUser ? JSON.parse(savedUser) : null;
-    });
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -29,7 +26,6 @@ export const AuthProvider = ({ children }) => {
             const { data } = await api.get('/user/current-user');
             if (data.success) {
                 setUser(data.data);
-                localStorage.setItem('user', JSON.stringify(data.data));
             }
         } catch (error) {
             console.error("Auth check failed:", error);
@@ -47,7 +43,6 @@ export const AuthProvider = ({ children }) => {
         if (data.success) {
             localStorage.setItem('accessToken', data.data.accessToken);
             localStorage.setItem('refreshToken', data.data.refreshToken);
-            localStorage.setItem('user', JSON.stringify(data.data.user));
             setUser(data.data.user);
         }
         return data;
@@ -60,7 +55,6 @@ export const AuthProvider = ({ children }) => {
         if (data.success) {
             localStorage.setItem('accessToken', data.data.accessToken);
             localStorage.setItem('refreshToken', data.data.refreshToken);
-            localStorage.setItem('user', JSON.stringify(data.data.user));
             setUser(data.data.user);
         }
         return data;
@@ -74,7 +68,6 @@ export const AuthProvider = ({ children }) => {
         } finally {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
             setUser(null);
         }
     };
